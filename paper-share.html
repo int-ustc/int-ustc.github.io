@@ -25,20 +25,76 @@
                 <li><a href="news.html">最新动向</a></li>
                 <li><a href="member.html">团队成员</a></li>
                 <li><a href="equipment.html">科研设备</a></li>
-                <li><a class="active" href="paper.html">科研论文</a></li>
+                <li><a href="paper.html">科研论文</a></li>
                 <li><a href="project.html">科研项目</a></li>
                 <li><a href="life.html">科研生活</a></li>
-                <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzg5NTU4MzE0Nw==&action=getalbum&album_id=1792195682527674382&scene=126&sessionid=-1649007569&uin=&key=&devicetype=Windows+10+x64&version=6309092b&lang=zh_CN&ascene=0" target="_blank">成果分享</a></li>
+                <li><a class="active" href="paper-share.html">成果分享</a></li>
             </ul>
         </header>
         <div class="blank">
 
         </div>
         <main class="main-content ">
+            <script>
+                let URL = "https://mp.weixin.qq.com/s/HKlVcGORfN_GhmvzVHZSaQ";
+                //微信的文章地址
+                //调用跨域API
+                let realurl = 'https://cors-anywhere.herokuapp.com/' + URL;
+                let that = this;
+                $.ajax({
+                    type: 'get',
+                    url: realurl,
+                    success: function(response) {
+                        if (response) {
+                            let html = response;
+                            html = html.replace(/data-src/g, "src")
+                                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/g, '')
+                                .replace(/https/g, 'http');
+                            //根据微信传回的html中的特殊路径data-src转为src等
+                            let html_src = html;
+                            let iframe = document.getElementById('iFrame');
+                            iframe.src = html_src;
+                            //这时候就成功拿到了微信公众号，这个html_src是个静态网页
+                            let doc = iframe.contentDocument || iframe.document;
 
+                            let head = doc.querySelector("head");
+                            let meta = `<meta name="referrer" content="never">`;
+                            head.innerHTML += meta;
+                            //添加meta展示图片
 
+                            let backgroundUrlReg = /url[(]&quot;(\S*)&quot;/g;
+                            let backgroundImgs = html_src.match(backgroundUrlReg);
+                            if (backgroundImgs.length) {
+                                backgroundImgs.forEach(item => {
+                                    let url = item.replace(/url[(]&quot;/g, '').replace(/&quot;/g, '');
+                                    let img = document.createElement('img');
+                                    img.src = url;
+                                    doc.querySelector("body").appendChild(img);
+                                });
+                            }
+                            //配置无效img绕过背景图片路径限制
 
-            <div class="page-head ">
+                            doc.write(html_src);
+                            // 将静态页面写入iframe中
+                            setTimeout(() => {
+                                that.height = doc.documentElement.scrollHeight;
+                            }, 500);
+                            //通过延时获取文档高度赋值Iframe去除滚动条，根据实际情况增加延时时间
+                            doc.getElementById("js_content").style.visibility = "visible";
+                        }
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                })
+            </script>
+            <iframe src="https://mp.weixin.qq.com/s/HKlVcGORfN_GhmvzVHZSaQ" frameborder="0" id="iFrame" width="100%" scrolling="no" : height="2040px"> </iframe>
+
+            <!-- js:
+            <iframe src="" width="90%" height="2040px">
+            </iframe> -->
+            <!-- https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzg5NTU4MzE0Nw==&action=getalbum&album_id=1792195682527674382&scene=126&sessionid=-1649007569&uin=&key=&devicetype=Windows+10+x64&version=6309092b&lang=zh_CN&ascene=0 -->
+            <!-- <div class="page-head ">
                 <div class="container ">
                     <h3 class="page-title ">2024</h3>
                 </div>
@@ -697,7 +753,7 @@
                         <span><font color="#FF0000 ">[CCF A]</font></span> [
                         <a href="https://ieeexplore.ieee.org/abstract/document/6787070 " style="color:#0000FF; ">PDF</a>] <br></p>
                 </div>
-            </div>
+            </div> -->
 
 
 
